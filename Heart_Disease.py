@@ -25,4 +25,10 @@ df['AHD'].value_counts().plot(kind='bar')
 def plotting(var,num):
   plt.subplot(2,2,num)
   sns.histplot(df[var],kde=True)
-  
+
+plotting('Age',1) 
+plotting('RestBP',2) 
+plotting('Chol',3) 
+plotting('MaxHR',4) 
+
+plt.tight_layout()

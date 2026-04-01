@@ -32,3 +32,12 @@ plotting('Chol',3)
 plotting('MaxHR',4) 
 
 plt.tight_layout()
+
+
+#categorical values analysis
+pip install sheryanalysis==0.1.0
+import sheryanalysis as sh
+sh.analyze(df)
+
+sns.countplot(x=df['Sex'])
+sns.countplot(x=df['ChestPain'],hue=df['AHD'])

@@ -6,38 +6,82 @@ import warnings
 
 warnings.filterwarnings('ignore')
 
-df=pd.read_csv('/content/Heart.csv')
-df.head()
+# Load dataset
+df = pd.read_csv('/content/Heart.csv')
 
-#EDA
+# -------------------- BASIC EDA --------------------
+print(df.head())
 
-df.columns
-df.shape
-df.info()
-df.describe()
+print(df.columns)
+print(df.shape)
+print(df.info())
+print(df.describe())
 
-df.duplicated().sum()
-df.isnull().sum()
-df['AHD'].value_counts() #to check if it is equally distributed data
-#sns.countplot(x=df['AHD'])
+# -------------------- DATA CLEANING --------------------
+
+# Remove duplicates
+print("Duplicate values:", df.duplicated().sum())
+df = df.drop_duplicates()
+
+# Handle missing values
+print("Missing values:\n", df.isnull().sum())
+
+# Fill missing values (if any)
+for col in df.columns:
+    if df[col].dtype == 'object':
+        df[col].fillna(df[col].mode()[0], inplace=True)
+    else:
+        df[col].fillna(df[col].median(), inplace=True)
+
+# -------------------- TARGET DISTRIBUTION --------------------
+print(df['AHD'].value_counts())
 df['AHD'].value_counts().plot(kind='bar')
+plt.title("Target Distribution (AHD)")
+plt.show()
 
-def plotting(var,num):
-  plt.subplot(2,2,num)
-  sns.histplot(df[var],kde=True)
+# -------------------- NUMERICAL FEATURE ANALYSIS --------------------
+def plotting(var, num):
+    plt.subplot(2, 2, num)
+    sns.histplot(df[var], kde=True)
+    plt.title(var)
 
-plotting('Age',1) 
-plotting('RestBP',2) 
-plotting('Chol',3) 
-plotting('MaxHR',4) 
-
+plt.figure(figsize=(10,8))
+plotting('Age', 1) 
+plotting('RestBP', 2) 
+plotting('Chol', 3) 
+plotting('MaxHR', 4) 
 plt.tight_layout()
+plt.show()
 
-
-#categorical values analysis
-pip install sheryanalysis==0.1.0
-import sheryanalysis as sh
-sh.analyze(df)
-
+# -------------------- CATEGORICAL ANALYSIS --------------------
 sns.countplot(x=df['Sex'])
-sns.countplot(x=df['ChestPain'],hue=df['AHD'])
+plt.title("Sex Distribution")
+plt.show()
+
+sns.countplot(x=df['ChestPain'], hue=df['AHD'])
+plt.title("Chest Pain vs AHD")
+plt.show()
+
+# -------------------- FEATURE ENGINEERING --------------------
+
+# Convert categorical variables into numerical
+
+# Binary encoding
+df['Sex'] = df['Sex'].map({'Male': 1, 'Female': 0})
+df['AHD'] = df['AHD'].map({'Yes': 1, 'No': 0})
+df['FastingBS'] = df['FastingBS'].map({1: 1, 0: 0})
+
+# One-hot encoding for multi-category columns
+df = pd.get_dummies(df, columns=['ChestPain', 'Thal'], drop_first=True)
+
+# -------------------- FEATURE SCALING --------------------
+from sklearn.preprocessing import StandardScaler
+
+scaler = StandardScaler()
+
+num_cols = ['Age', 'RestBP', 'Chol', 'MaxHR', 'Oldpeak']
+df[num_cols] = scaler.fit_transform(df[num_cols])
+
+# -------------------- FINAL DATA CHECK --------------------
+print("Final dataset shape:", df.shape)
+print(df.head())
